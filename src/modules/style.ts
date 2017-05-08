@@ -1,29 +1,33 @@
 import {VNode, VNodeData} from '../vnode';
 import {Module} from './module';
 
-// requestAnimationFrame
+// 如果存在 requestAnimationFrame，则直接使用，以优化性能，否则用 setTimeout 代替
 var raf = (typeof window !== 'undefined' && window.requestAnimationFrame) || setTimeout;
 // 执行下一帧
 var nextFrame = function(fn: any) { raf(function() { raf(fn); }); };
-// 设置下一帧
+// 通过 nextFrame 来实现动画效果
 function setNextFrame(obj: any, prop: string, val: any): void {
   nextFrame(function() { obj[prop] = val; });
 }
 
 // 更新 style
+// 如：{style: {fontWeight: 'bold'}}
 function updateStyle(oldVnode: VNode, vnode: VNode): void {
   var cur: any, name: string, elm = vnode.elm,
-      oldStyle = (oldVnode.data as VNodeData).style,
-      style = (vnode.data as VNodeData).style;
+      oldStyle = (oldVnode.data as VNodeData).style, // 老节点 style 数据
+      style = (vnode.data as VNodeData).style; // 新节点 style 数据
 
-  if (!oldStyle && !style) return;
-  if (oldStyle === style) return;
+  if (!oldStyle && !style) return; // 如果都不存在，则不操作
+  if (oldStyle === style) return; // 如果没有变化，则不操作
   oldStyle = oldStyle || {};
   style = style || {};
-  var oldHasDel = 'delayed' in oldStyle;
+  var oldHasDel = 'delayed' in oldStyle; // 判断老节点里是否有 delayed
 
+  // 遍历老节点 style 数据
   for (name in oldStyle) {
+    // 如果新节点中无 style[name]
     if (!style[name]) {
+      // 如果属性名称以 '--' 开头，则移除此属性，否则将此属性置空
       if (name[0] === '-' && name[1] === '-') {
         (elm as any).style.removeProperty(name);
       } else {

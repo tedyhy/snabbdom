@@ -3,14 +3,14 @@ import {Hooks} from './hooks';
 // 定义 Key 类型为 string|number
 export type Key = string | number;
 
-// 定义接口 VNode
+// 定义接口 VNode，规范虚拟节点数据格式
 export interface VNode {
-  sel: string | undefined;
-  data: VNodeData | undefined;
-  children: Array<VNode | string> | undefined;
-  elm: Node | undefined;
-  text: string | undefined;
-  key: Key;
+  sel: string | undefined; // selector 选择器，如：'div','div#a','div#a.b.c'
+  data: VNodeData | undefined; // VNode 绑定的数据，可以有以下类型：attribute、props、eventlistner、class、dataset、hook
+  children: Array<VNode | string> | undefined; // 子节点数组
+  elm: Node | undefined; // 对真实 dom element 的引用
+  text: string | undefined; // 当前节点 text 内容
+  key: Key; // 用于不同 VNode 之间的比对
 }
 
 // 定义接口 VNodeData
@@ -33,7 +33,15 @@ export interface VNodeData {
   // end of modules
 }
 
-// 生成虚拟节点数据
+/**
+ * 将传入的数据转化为 VNode 对象形式（虚拟节点数据）
+ * @param sel selector 选择器
+ * @param data 绑定的数据
+ * @param children 子节点数组
+ * @param text 当前节点 text 内容
+ * @param elm 对真实 dom element 的引用
+ * @returns {{sel: (string|undefined), data: (any|undefined), children: (Array<VNode|string>|undefined), text: (string|undefined), elm: (Element|Text|undefined), key: (string|number)}}
+ */
 export function vnode(sel: string | undefined,
                       data: any | undefined,
                       children: Array<VNode | string> | undefined,

@@ -1,21 +1,29 @@
 /* global module, document, Node */
+// snabbdom 核心，包含diff，patch等操作
+
 import {Module} from './modules/module';
 import {Hooks} from './hooks';
 import vnode, {VNode, VNodeData, Key} from './vnode';
 import * as is from './is';
 import htmlDomApi, {DOMAPI} from './htmldomapi';
 
+// 判断传参 s 是否未定义
 function isUndef(s: any): boolean { return s === undefined; }
+// 判断传参 s 是否已定义
 function isDef(s: any): boolean { return s !== undefined; }
 
+// 定义类型 VNodeQueue
 type VNodeQueue = Array<VNode>;
 
+// 定义一个空的虚拟节点
 const emptyNode = vnode('', {}, [], undefined, undefined);
 
+// 判断两个节点是否相同
 function sameVnode(vnode1: VNode, vnode2: VNode): boolean {
   return vnode1.key === vnode2.key && vnode1.sel === vnode2.sel;
 }
 
+// 判断节点是否是虚拟节点（vnode）
 function isVnode(vnode: any): vnode is VNode {
   return vnode.sel !== undefined;
 }
@@ -45,9 +53,18 @@ const hooks: (keyof Module)[] = ['create', 'update', 'remove', 'destroy', 'pre',
 export {h} from './h';
 export {thunk} from './thunk';
 
+/**
+ * 根据模块初始化生成 patch 方法
+ * Partial 参考 https://www.typescriptlang.org/docs/handbook/release-notes/typescript-2-1.html
+ *
+ * @param modules 要引入的模块数组集合
+ * @param domApi dom 节点方法或属性
+ * @returns {(oldVnode:(VNode|Element), vnode:VNode)=>VNode}
+ */
 export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
   let i: number, j: number, cbs = ({} as ModuleHooks);
 
+  // 初始化 DOM API
   const api: DOMAPI = domApi !== undefined ? domApi : htmlDomApi;
 
   for (i = 0; i < hooks.length; ++i) {

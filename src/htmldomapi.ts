@@ -1,4 +1,5 @@
 // 定义接口 DOMAPI，里面包含了一系列跟 dom 相关属性或方法
+// 对原生 DOM 操作的抽象
 export interface DOMAPI {
   createElement: (tagName: any) => HTMLElement;
   createElementNS: (namespaceURI: string, qualifiedName: string) => Element;
