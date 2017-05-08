@@ -42,15 +42,21 @@ function createListener() {
   }
 }
 
+/**
+ * 更新事件监听器
+ * @param oldVnode 老的节点数据
+ * @param vnode 新的节点数据
+ */
 function updateEventListeners(oldVnode: VNode, vnode?: VNode): void {
-  var oldOn = (oldVnode.data as VNodeData).on,
-      oldListener = (oldVnode as any).listener,
-      oldElm: Element = oldVnode.elm as Element,
-      on = vnode && (vnode.data as VNodeData).on,
-      elm: Element = (vnode && vnode.elm) as Element,
+  var oldOn = (oldVnode.data as VNodeData).on, // 老节点 on 监听的事件回调
+      oldListener = (oldVnode as any).listener, // 老节点监听器
+      oldElm: Element = oldVnode.elm as Element, // 老节点元素
+      on = vnode && (vnode.data as VNodeData).on, // 新节点 on 监听的事件回调
+      elm: Element = (vnode && vnode.elm) as Element, // 新节点元素
       name: string;
 
   // optimization for reused immutable handlers
+  // 老节点 on 监听的事件回调和新的一致
   if (oldOn === on) {
     return;
   }

@@ -5,12 +5,12 @@ const CAPS_REGEX = /[A-Z]/g;
 
 function updateDataset(oldVnode: VNode, vnode: VNode): void {
   let elm: HTMLElement = vnode.elm as HTMLElement,
-    oldDataset = (oldVnode.data as VNodeData).dataset,
-    dataset = (vnode.data as VNodeData).dataset,
+    oldDataset = (oldVnode.data as VNodeData).dataset, // 老节点 dataset 数据
+    dataset = (vnode.data as VNodeData).dataset, // 新节点 dataset 数据
     key: string;
 
-  if (!oldDataset && !dataset) return;
-  if (oldDataset === dataset) return;
+  if (!oldDataset && !dataset) return; // 如果都不存在，则不操作
+  if (oldDataset === dataset) return; // 如果没有变化，则不操作
   oldDataset = oldDataset || {};
   dataset = dataset || {};
   const d = elm.dataset;
@@ -20,6 +20,7 @@ function updateDataset(oldVnode: VNode, vnode: VNode): void {
       if (d) {
         delete d[key];
       } else {
+        // 'aBC' => 'a-b-c'
         elm.removeAttribute('data-' + key.replace(CAPS_REGEX, '-$&').toLowerCase());
       }
     }

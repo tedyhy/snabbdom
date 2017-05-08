@@ -1,5 +1,6 @@
 import {VNode} from './vnode';
 
+// 定义各种类型
 export type PreHook = () => any;
 export type InitHook = (vNode: VNode) => any;
 export type CreateHook = (emptyVNode: VNode, vNode: VNode) => any;
@@ -11,6 +12,7 @@ export type DestroyHook = (vNode: VNode) => any;
 export type RemoveHook = (vNode: VNode, removeCallback: () => void) => any;
 export type PostHook = () => any;
 
+// 定义接口 Hooks
 export interface Hooks {
   pre?: PreHook;
   init?: InitHook;

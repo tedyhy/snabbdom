@@ -1,13 +1,16 @@
 import {VNode, VNodeData} from '../vnode';
 import {Module} from './module';
 
+// requestAnimationFrame
 var raf = (typeof window !== 'undefined' && window.requestAnimationFrame) || setTimeout;
+// 执行下一帧
 var nextFrame = function(fn: any) { raf(function() { raf(fn); }); };
-
+// 设置下一帧
 function setNextFrame(obj: any, prop: string, val: any): void {
   nextFrame(function() { obj[prop] = val; });
 }
 
+// 更新 style
 function updateStyle(oldVnode: VNode, vnode: VNode): void {
   var cur: any, name: string, elm = vnode.elm,
       oldStyle = (oldVnode.data as VNodeData).style,
@@ -78,6 +81,7 @@ function applyRemoveStyle(vnode: VNode, rm: () => void): void {
   });
 }
 
+// 导出接口 styleModule，接口类型为 Module
 export const styleModule = {
   create: updateStyle,
   update: updateStyle,
