@@ -14,10 +14,10 @@ const booleanAttrs = ["allowfullscreen", "async", "autofocus", "autoplay", "chec
                 "required", "reversed", "scoped", "seamless", "selected", "sortable", "spellcheck", "translate",
                 "truespeed", "typemustmatch", "visible"];
 
-// 初始化属性容器
+// 初始化属性字典
 const booleanAttrsDict: {[attribute: string]: boolean} = Object.create(null);
 
-// 遍历属性，初始化每个属性值为 true
+// 创建属性字典，默认为 true
 for (let i = 0, len = booleanAttrs.length; i < len; i++) {
   booleanAttrsDict[booleanAttrs[i]] = true;
 }

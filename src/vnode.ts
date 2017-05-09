@@ -13,15 +13,15 @@ export interface VNode {
   key: Key; // 用于不同 VNode 之间的比对
 }
 
-// 定义接口 VNodeData
+// 定义接口 VNodeData，规范 VNode.data 数据格式
 export interface VNodeData {
   // modules - use any because Object type is useless
   props?: any; // 属性
-  attrs?: any; // 属性
+  attrs?: any; // attributes 属性
   class?: any; // 类
   style?: any; // 样式
   dataset?: any; // dataset 属性
-  on?: any; // 事件监听器
+  on?: any; // 事件监听容器，形如：{click: [handler1, data1, ...], keyup: [handler2, data2]}
   hero?: any;
   attachData?: any;
   hook?: Hooks;
