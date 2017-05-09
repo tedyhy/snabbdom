@@ -368,29 +368,44 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
     if (isDef(i = vnode.data) && isDef(hook = i.hook) && isDef(i = hook.prepatch)) {
       i(oldVnode, vnode);
     }
-    const elm = vnode.elm = (oldVnode.elm as Node);
-    let oldCh = oldVnode.children;
-    let ch = vnode.children;
+    const elm = vnode.elm = (oldVnode.elm as Node); // 同步 vnode 节点 elm
+    let oldCh = oldVnode.children; // oldVnode 节点子节点
+    let ch = vnode.children; // vnode 节点子节点
+    // 如果 oldvnode 和 vnode 的子节点集合引用相同，说明没发生任何变化直接返回，避免性能浪费
+    // 如果 oldvnode 和 vnode 不同，说明 vnode 有更新
     if (oldVnode === vnode) return;
+    // vnode 节点存在 data 数据
     if (vnode.data !== undefined) {
+      // 先调用全局 update 钩子
       for (i = 0; i < cbs.update.length; ++i) cbs.update[i](oldVnode, vnode);
+      // 然后调用 vnode.data 里面的 update 钩子
       i = vnode.data.hook;
       if (isDef(i) && isDef(i = i.update)) i(oldVnode, vnode);
     }
+    // vnode 不是 text 节点
     if (isUndef(vnode.text)) {
       if (isDef(oldCh) && isDef(ch)) {
+        // vnode 和 oldVnode 都有子节点
+        // 如果 vnode 和 oldVnode 的子节点不同时，调用 updateChildren 去 diff 子节点，更新子节点
         if (oldCh !== ch) updateChildren(elm, oldCh as Array<VNode>, ch as Array<VNode>, insertedVnodeQueue);
       } else if (isDef(ch)) {
+        // vnode 有子节点，oldVnode 没有子节点
+        // 如果 oldVnode 是 text 节点，则将 elm 的 text 清除
         if (isDef(oldVnode.text)) api.setTextContent(elm, '');
+        // 并添加 vnode 的子节点到 elm 元素内
         addVnodes(elm, null, ch as Array<VNode>, 0, (ch as Array<VNode>).length - 1, insertedVnodeQueue);
       } else if (isDef(oldCh)) {
+        // 如果 oldVnode 有子节点，而 vnode 没子节点，则移除 elm 的子节点
         removeVnodes(elm, oldCh as Array<VNode>, 0, (oldCh as Array<VNode>).length - 1);
       } else if (isDef(oldVnode.text)) {
+        // 如果 vnode 和 oldVnode 都没有子节点，且 vnode 没 text，则删除 oldvnode 的 text
         api.setTextContent(elm, '');
       }
     } else if (oldVnode.text !== vnode.text) {
+      // 如果 oldvnode 的 text 和 vnode 的 text 不同，则 elm 的文本更新为 vnode 的 text
       api.setTextContent(elm, vnode.text as string);
     }
+    // patch 完，触发 vnode 节点的 postpatch 钩子
     if (isDef(hook) && isDef(i = hook.postpatch)) {
       i(oldVnode, vnode);
     }
