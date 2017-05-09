@@ -288,13 +288,13 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
                           oldCh: Array<VNode>,
                           newCh: Array<VNode>,
                           insertedVnodeQueue: VNodeQueue) {
-    let oldStartIdx = 0, newStartIdx = 0;
-    let oldEndIdx = oldCh.length - 1;
-    let oldStartVnode = oldCh[0];
-    let oldEndVnode = oldCh[oldEndIdx];
-    let newEndIdx = newCh.length - 1;
-    let newStartVnode = newCh[0];
-    let newEndVnode = newCh[newEndIdx];
+    let oldStartIdx = 0, newStartIdx = 0; // 初始化新旧头索引
+    let oldEndIdx = oldCh.length - 1; // 旧尾索引 = 旧子节点个数 - 1
+    let oldStartVnode = oldCh[0]; // 旧头节点 = 旧子节点[0]
+    let oldEndVnode = oldCh[oldEndIdx]; // 旧尾节点 = 最后一个旧子节点
+    let newEndIdx = newCh.length - 1; // 新尾索引 = 新子节点个数 - 1
+    let newStartVnode = newCh[0]; // 新头节点 = 新子节点[0]
+    let newEndVnode = newCh[newEndIdx]; // 新尾节点 = 最后一个新子节点
     let oldKeyToIdx: any;
     let idxInOld: number;
     let elmToMove: VNode;
@@ -302,56 +302,81 @@ export function init(modules: Array<Partial<Module>>, domApi?: DOMAPI) {
 
     while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
       if (oldStartVnode == null) {
+        // 如果旧头节点不存在，则将旧头节点向右偏移
         oldStartVnode = oldCh[++oldStartIdx]; // Vnode might have been moved left
       } else if (oldEndVnode == null) {
+        // 如果旧尾节点不存在，则将旧尾节点向左偏移
         oldEndVnode = oldCh[--oldEndIdx];
       } else if (newStartVnode == null) {
+        // 如果新头节点不存在，则将新头节点向右偏移
         newStartVnode = newCh[++newStartIdx];
       } else if (newEndVnode == null) {
+        // 如果新尾节点不存在，则将新尾节点向左偏移
         newEndVnode = newCh[--newEndIdx];
       } else if (sameVnode(oldStartVnode, newStartVnode)) {
+        // 如果旧头索引节点和新头索引节点相同
+        // 对旧头索引节点和新头索引节点进行 diff 更新，从而达到复用节点效果
         patchVnode(oldStartVnode, newStartVnode, insertedVnodeQueue);
-        oldStartVnode = oldCh[++oldStartIdx];
-        newStartVnode = newCh[++newStartIdx];
+        oldStartVnode = oldCh[++oldStartIdx]; // 旧头索引节点向右偏移
+        newStartVnode = newCh[++newStartIdx]; // 新头索引节点向右偏移
       } else if (sameVnode(oldEndVnode, newEndVnode)) {
+        // 如果旧尾索引节点和新尾索引节点相同
+        // 对旧尾索引节点和新尾索引节点进行 diff 更新，从而达到复用节点效果
         patchVnode(oldEndVnode, newEndVnode, insertedVnodeQueue);
-        oldEndVnode = oldCh[--oldEndIdx];
-        newEndVnode = newCh[--newEndIdx];
+        oldEndVnode = oldCh[--oldEndIdx]; // 旧尾索引节点向左偏移
+        newEndVnode = newCh[--newEndIdx]; // 新尾索引节点向左偏移
       } else if (sameVnode(oldStartVnode, newEndVnode)) { // Vnode moved right
+        /**
+         * 如果旧头索引节点和新头索引节点相似，可以通过移动来复用。
+         * 如旧节点为【5,1,2,3,4】，新节点为【1,2,3,4,5】，如果缺乏这种判断，意味着：
+         * 那样需要先将 5->1,1->2,2->3,3->4,4->5 五次删除插入操作，即使是有了 key-index 来复用，
+         * 也会出现【5,1,2,3,4】->【1,5,2,3,4】->【1,2,5,3,4】->【1,2,3,5,4】->【1,2,3,4,5】共4次操作。
+         * 如果有了这种判断，我们只需要将 5 插入到最后一次操作即可
+         */
         patchVnode(oldStartVnode, newEndVnode, insertedVnodeQueue);
         api.insertBefore(parentElm, oldStartVnode.elm as Node, api.nextSibling(oldEndVnode.elm as Node));
-        oldStartVnode = oldCh[++oldStartIdx];
-        newEndVnode = newCh[--newEndIdx];
+        oldStartVnode = oldCh[++oldStartIdx]; // 旧头索引节点向右偏移
+        newEndVnode = newCh[--newEndIdx]; // 新尾索引节点向左偏移
       } else if (sameVnode(oldEndVnode, newStartVnode)) { // Vnode moved left
+        // 原理与上面相同，只不过方向相反
         patchVnode(oldEndVnode, newStartVnode, insertedVnodeQueue);
         api.insertBefore(parentElm, oldEndVnode.elm as Node, oldStartVnode.elm as Node);
-        oldEndVnode = oldCh[--oldEndIdx];
-        newStartVnode = newCh[++newStartIdx];
+        oldEndVnode = oldCh[--oldEndIdx]; // 旧尾索引节点向左偏移
+        newStartVnode = newCh[++newStartIdx]; // 新头索引节点向右偏移
       } else {
+        // 如果上面的判断都不通过，我们就需要 key-index 表来达到最大程度复用了
         if (oldKeyToIdx === undefined) {
+          // 如果不存在旧节点的 key-index 表，则创建
           oldKeyToIdx = createKeyToOldIdx(oldCh, oldStartIdx, oldEndIdx);
         }
+        // 找到新节点在旧节点组中对应节点的位置
         idxInOld = oldKeyToIdx[newStartVnode.key as string];
         if (isUndef(idxInOld)) { // New element
+          // 如果新节点在旧节点组中不存在，我们将它插入到旧头索引节点前，然后新头索引向后偏移
           api.insertBefore(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm as Node);
           newStartVnode = newCh[++newStartIdx];
         } else {
+          // 如果新节点在旧节点组中存在，先找到对应的旧节点
           elmToMove = oldCh[idxInOld];
           if (elmToMove.sel !== newStartVnode.sel) {
+            // 如果对应的旧节点和新节点 DOM 元素引用不同，则在对应的旧节点前插入新节点
             api.insertBefore(parentElm, createElm(newStartVnode, insertedVnodeQueue), oldStartVnode.elm as Node);
           } else {
+            // 如果对应的旧节点和新节点 DOM 元素引用相同，则进行 diff 更新，从而达到复用节点效果
             patchVnode(elmToMove, newStartVnode, insertedVnodeQueue);
-            oldCh[idxInOld] = undefined as any;
-            api.insertBefore(parentElm, (elmToMove.elm as Node), oldStartVnode.elm as Node);
+            oldCh[idxInOld] = undefined as any; // 清除对应的旧节点
+            api.insertBefore(parentElm, (elmToMove.elm as Node), oldStartVnode.elm as Node); // 在旧节点前插入新节点
           }
-          newStartVnode = newCh[++newStartIdx];
+          newStartVnode = newCh[++newStartIdx]; // 新头索引节点向右偏移
         }
       }
     }
+    // 当旧头索引大于旧尾索引时，代表旧节点组已经遍历完，将剩余的新 vnode 添加到最后一个新节点的位置后
     if (oldStartIdx > oldEndIdx) {
       before = newCh[newEndIdx+1] == null ? null : newCh[newEndIdx+1].elm;
       addVnodes(parentElm, before, newCh, newStartIdx, newEndIdx, insertedVnodeQueue);
     } else if (newStartIdx > newEndIdx) {
+      // 如果新节点组先遍历完，那么代表旧节点组中剩余节点都不需要，所以直接删除
       removeVnodes(parentElm, oldCh, oldStartIdx, oldEndIdx);
     }
   }
