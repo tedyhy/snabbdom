@@ -24,8 +24,8 @@ export interface VNodeData {
   on?: any; // 事件监听容器，形如：{click: [handler1, data1, ...], keyup: [handler2, data2]}
   hero?: any;
   attachData?: any;
-  hook?: Hooks;
-  key?: Key;
+  hook?: Hooks; // VNode 上的 hook 回调，规范来自 Hooks 接口。包括方法：pre|init|create|insert|prepatch|update|postpatch|destroy|remove|post。
+  key?: Key; // 用于不同 VNode 之间的比对
   ns?: string; // for SVGs 命名空间
   fn?: () => VNode; // for thunks
   args?: Array<any>; // for thunks
